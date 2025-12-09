@@ -18,22 +18,34 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
+          npm install -g expo-cli
           npm install
       - name: Prebuild iOS
         script: |
           npx expo prebuild --platform ios --clean
+      - name: Verify iOS folder
+        script: |
+          ls -la
+          if [ ! -d "ios" ]; then
+            echo "ERROR: ios folder not created!"
+            exit 1
+          fi
+          echo "✅ ios folder exists"
       - name: Install CocoaPods
         script: |
-          cd ios && pod install
+          cd ios
+          pod install
       - name: Set up code signing
         script: |
           cd ios
-          xcode-project use-profiles --project DentalClinic.xcodeproj || true
+          xcode-project use-profiles || true
       - name: Build iOS archive
         script: |
           cd ios
           WORKSPACE=$(find . -name "*.xcworkspace" -maxdepth 1 -type d | head -n 1 | sed 's|./||')
           SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list | grep -A 100 "Schemes:" | grep -v "Schemes:" | head -n 1 | xargs)
+          echo "Building workspace: $WORKSPACE"
+          echo "Using scheme: $SCHEME"
           xcodebuild -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
             -configuration Release \
