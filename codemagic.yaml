@@ -12,6 +12,9 @@ workflows:
       vars:
         EXPO_PUBLIC_SUPABASE_URL: <redacted>
         EXPO_PUBLIC_SUPABASE_ANON_KEY: <redacted>
+        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
     scripts:
       - name: Install dependencies
         script: |
@@ -64,9 +67,12 @@ workflows:
             -archivePath $HOME/DentalClinic.xcarchive \
             -exportPath $HOME/build \
             -exportOptionsPlist $HOME/export_options.plist
+      - name: Upload to TestFlight
+        script: |
+          xcrun altool --upload-app \
+            --type ios \
+            --file $HOME/build/*.ipa \
+            --apiKey $APP_STORE_CONNECT_KEY_IDENTIFIER \
+            --apiIssuer $APP_STORE_CONNECT_ISSUER_ID
     artifacts:
       - $HOME/build/*.ipa
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
